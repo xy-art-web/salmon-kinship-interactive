@@ -1,4 +1,4 @@
-# 📄 Development Process & Reflection Report (PROCESS.md)
+# 📄 Development Process & Reflection Report
 
 > **Project Name**: Becoming Salmon: Composting Kinship - Immersive Eco-Interactive Web Experience  
 > **Course Code**: SD5913 | Assignment 3: Interactive Experience
