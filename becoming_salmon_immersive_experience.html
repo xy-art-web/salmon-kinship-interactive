@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Becoming Salmon: Composting Kinship - Immersive Experience</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Playfair Display -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- MediaPipe Hands & Camera Utils -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* 16:9 标准视口容器：严格保持 16:9 比例，图片与视频不被挤压变形 */
+        .aspect-16-9-container {
+            position: relative;
+            width: 100vw;
+            height: 56.25vw;
+            max-height: 100vh;
+            max-width: 177.78vh;
+            margin: auto;
+            top: 0; bottom: 0; left: 0; right: 0;
+            position: absolute;
+            background-color: #000;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        /* 严格保持原图比例与原生尺寸的图标按钮 */
+        .interactive-icon {
+            position: absolute;
+            cursor: pointer;
+            user-select: none;
+            height: 5.8vh; 
+            width: auto;
+            transition: transform 0.1s ease;
+        }
+        .interactive-icon:active {
+            transform: scale(0.97);
+        }
+
+        /* 弹窗专用固定尺寸按钮：严格保持 133x33 像素原图尺寸 */
+        .modal-btn-img {
+            cursor: pointer;
+            user-select: none;
+            width: 133px;
+            height: 33px;
+            object-fit: contain;
+            transition: transform 0.1s ease;
+        }
+        .modal-btn-img:active {
+            transform: scale(0.97);
+        }
+
+        /* 弹窗专用字体：Playfair Display Regular */
+        .playfair-modal {
+            font-family: 'Playfair Display', serif;
+            font-weight: 400;
+        }
+
+        /* 赛博深海科技 UI 悬浮玻璃面板样式 */
+        .sci-fi-panel {
+            background: rgba(10, 25, 45, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(102, 196, 191, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+        }
+
+        /* 画中画模糊效果 */
+        .pip-window {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .fade-transition {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* 弹窗轻微弹性出现动画 */
+        @keyframes modal-bounce-in {
+            0% { transform: scale(0.92); opacity: 0; }
+            60% { transform: scale(1.02); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-animated {
+            animation: modal-bounce-in 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* 丰富发光且一闪一闪（明暗交替呼吸）的粒子特效动画 */
+        @keyframes float-and-blink-1 {
+            0% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+            50% { transform: translateY(-20px) translateX(15px); opacity: 1; box-shadow: 0 0 15px #66C4BF; }
+            100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+        }
+        @keyframes float-and-blink-2 {
+            0% { transform: translateY(0px) translateX(0px); opacity: 0.8; box-shadow: 0 0 12px #66C4BF; }
+            50% { transform: translateY(18px) translateX(-18px); opacity: 0.1; }
+            100% { transform: translateY(0px) translateX(0px); opacity: 0.8; box-shadow: 0 0 12px #66C4BF; }
+        }
+        .p-anim-1 { animation: float-and-blink-1 3s ease-in-out infinite; }
+        .p-anim-2 { animation: float-and-blink-2 4.2s ease-in-out infinite 0.5s; }
+        .p-anim-3 { animation: float-and-blink-1 5s ease-in-out infinite 1.2s; }
+        .p-anim-4 { animation: float-and-blink-2 3.8s ease-in-out infinite 2s; }
+
+        /* 词汇呼吸发光动画与隐形过渡 */
+        @keyframes word-glow {
+            0% { text-shadow: 0 0 5px rgba(102,196,191,0.4); }
+            50% { text-shadow: 0 0 20px rgba(102,196,191,0.9), 0 0 30px rgba(102,196,191,0.5); }
+            100% { text-shadow: 0 0 5px rgba(102,196,191,0.4); }
+        }
+        .interactive-word {
+            animation: word-glow 2.5s ease-in-out infinite;
+            letter-spacing: 0.1em;
+            cursor: default;
+            user-select: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center bg-black">
+
+    <!-- 16:9 主显示容器 -->
+    <div class="aspect-16-9-container overflow-hidden">
+
+        <!-- ================= 1. 初始界面 (Primary Interface) ================= -->
+        <div id="landing-page" class="absolute inset-0 z-20 w-full h-full fade-transition">
+            <!-- 纯净背景图 -->
+            <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/702bb92d8b8fc73718bb8797f1a1fd5e3c2f6d63/1%20Primary%20interface.jpg" 
+                 alt="Primary Interface" 
+                 class="w-full h-full object-cover select-none pointer-events-none" />
+
+            <!-- 首页专属：大量一闪一闪的漂浮氛围粒子层 -->
+            <div class="absolute inset-0 pointer-events-none overflow-hidden z-10">
+                <div class="absolute top-[15%] left-[8%] w-1.5 h-1.5 rounded-full bg-[#66C4BF] shadow-[0_0_10px_#66C4BF] p-anim-1"></div>
+                <div class="absolute top-[28%] left-[85%] w-2 h-2 rounded-full bg-[#66C4BF] shadow-[0_0_14px_#66C4BF] p-anim-2"></div>
+                <div class="absolute top-[45%] left-[20%] w-1 h-1 rounded-full bg-[#66C4BF] shadow-[0_0_8px_#66C4BF] p-anim-3"></div>
+                <div class="absolute top-[60%] left-[90%] w-2 h-2 rounded-full bg-[#66C4BF] shadow-[0_0_12px_#66C4BF] p-anim-4"></div>
+                <div class="absolute top-[80%] left-[12%] w-1.5 h-1.5 rounded-full bg-[#66C4BF] shadow-[0_0_10px_#66C4BF] p-anim-2"></div>
+                <div class="absolute top-[35%] left-[45%] w-1.5 h-1.5 rounded-full bg-[#66C4BF] shadow-[0_0_10px_#66C4BF] p-anim-1"></div>
+                <div class="absolute top-[70%] left-[65%] w-2 h-2 rounded-full bg-[#66C4BF] shadow-[0_0_15px_#66C4BF] p-anim-3"></div>
+                <div class="absolute top-[18%] left-[60%] w-1 h-1 rounded-full bg-[#66C4BF] shadow-[0_0_8px_#66C4BF] p-anim-4"></div>
+            </div>
+
+            <!-- Guide 按钮 -->
+            <img id="btn-guide" 
+                 src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/a8fddac9c859c1d22a3c747176eb474b3a6fe124/icon%EF%BC%9Aguide-%20non%20interact.png" 
+                 alt="Guide Button"
+                 class="interactive-icon z-30"
+                 style="top: 83.5%; left: 5.2%;" />
+
+            <!-- Get Started 按钮 -->
+            <img id="btn-start" 
+                 src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/icon%EF%BC%9Astart-%20non%20interact.png" 
+                 alt="Get Started Button"
+                 class="interactive-icon z-30"
+                 style="top: 83.5%; left: 21.8%;" />
+        </div>
+
+        <!-- ================= 2. Guide 介绍弹窗 ================= -->
+        <div id="guide-modal" class="hidden absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex items-center justify-center p-6 fade-transition">
+            <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                <div class="absolute top-[12%] left-[18%] w-1.5 h-1.5 rounded-full bg-[#66C4BF] shadow-[0_0_10px_#66C4BF] p-anim-1"></div>
+                <div class="absolute top-[22%] left-[82%] w-2 h-2 rounded-full bg-[#66C4BF] shadow-[0_0_12px_#66C4BF] p-anim-2"></div>
+                <div class="absolute top-[48%] left-[10%] w-1.5 h-1.5 rounded-full bg-[#66C4BF] shadow-[0_0_8px_#66C4BF] p-anim-3"></div>
+                <div class="absolute top-[65%] left-[88%] w-2 h-2 rounded-full bg-[#66C4BF] shadow-[0_0_14px_#66C4BF] p-anim-4"></div>
+            </div>
+
+            <div id="guide-modal-content" class="relative max-w-3xl w-full flex items-center justify-center z-10 modal-animated">
+                <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/Guide%20pop-up%20window.png" 
+                     alt="Guide Pop-up Window" 
+                     class="w-full h-auto select-none pointer-events-none drop-shadow-[0_0_30px_rgba(102,196,191,0.3)]" />
+
+                <div class="absolute flex items-center gap-3 z-20" style="bottom: 11.2%; right: 9.5%;">
+                    <img id="btn-close-modal" 
+                         src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/window-%20close%20icon.png" 
+                         alt="Close Button" 
+                         class="modal-btn-img" />
+
+                    <img id="btn-modal-start" 
+                         src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/window-get%20started%20icon.png" 
+                         alt="Get Started Button" 
+                         class="modal-btn-img" />
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 3. 二级交互界面 (16:9 全尺寸深海探索视口) ================= -->
+        <div id="interactive-container" class="absolute inset-0 z-10 hidden">
+            <!-- Three.js 渲染画布 -->
+            <canvas id="webgl-canvas" class="w-full h-full block"></canvas>
+
+            <!-- 隐藏初始状态的深海词汇节点 -->
+            <!-- 词汇一：Overfishing, marine debris (左上方) -->
+            <div id="word-debris" class="absolute z-25 interactive-word text-sky-200 font-bold tracking-widest text-base md:text-lg pointer-events-none opacity-0 transform scale-90" style="top: 25%; left: 15%;">
+                [ OVERFISHING, MARINE DEBRIS ]
+            </div>
+
+            <!-- 词汇二：salmon (右上方) -->
+            <div id="word-salmon" class="absolute z-25 interactive-word text-cyan-300 font-bold tracking-widest text-lg md:text-xl pointer-events-none opacity-0 transform scale-90" style="top: 25%; left: 70%;">
+                [ SALMON ]
+            </div>
+
+            <!-- 词汇三：Aquatic Kinship (左下方) -->
+            <div id="word-kinship" class="absolute z-25 interactive-word text-teal-300 font-bold tracking-widest text-lg md:text-xl pointer-events-none opacity-0 transform scale-90" style="top: 68%; left: 20%;">
+                [ AQUATIC KINSHIP ]
+            </div>
+
+            <!-- 信息可视化悬浮卡片容器 (位置相互拉开，防止相互掩盖) -->
+            <!-- 卡片一：Overfishing 工业器械图解 (位置：左侧中部) -->
+            <div id="card-debris" class="hidden absolute z-30 sci-fi-panel p-2 rounded-2xl w-80 md:w-[420px] text-white transition-all duration-300 transform scale-95 opacity-0 pointer-events-auto" style="top: 34%; left: 8%;">
+                <div class="flex items-center justify-between border-b border-[#66C4BF]/30 px-2 py-1 mb-2">
+                    <span class="text-xs font-mono text-[#66C4BF]">INDUSTRIAL // OVERFISHING & DEBRIS</span>
+                    <button onclick="openEnlargeModal('https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/0bdaee59bd6f2ad6cc83925643724b23f4c04f66/OVERFISHING%2C%20MARINE%20DEBRIS.png', 'OVERFISHING & MARINE DEBRIS')" class="text-[11px] bg-[#66C4BF]/20 hover:bg-[#66C4BF]/40 text-[#66C4BF] px-2 py-0.5 rounded border border-[#66C4BF]/50 transition flex items-center gap-1 cursor-pointer">
+                        🔍 Click to Enlarge
+                    </button>
+                </div>
+                <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/0bdaee59bd6f2ad6cc83925643724b23f4c04f66/OVERFISHING%2C%20MARINE%20DEBRIS.png" 
+                     alt="Overfishing and Marine Debris Visualization" 
+                     class="w-full h-auto rounded-xl object-contain drop-shadow-[0_0_15px_rgba(102,196,191,0.3)] cursor-pointer" 
+                     onclick="openEnlargeModal('https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/0bdaee59bd6f2ad6cc83925643724b23f4c04f66/OVERFISHING%2C%20MARINE%20DEBRIS.png', 'OVERFISHING & MARINE DEBRIS')" />
+            </div>
+
+            <!-- 卡片二：salmon 解剖蓝图 (位置：右侧中部) -->
+            <div id="card-salmon" class="hidden absolute z-30 sci-fi-panel p-2 rounded-2xl w-80 md:w-[420px] text-white transition-all duration-300 transform scale-95 opacity-0 pointer-events-auto" style="top: 34%; left: 56%;">
+                <div class="flex items-center justify-between border-b border-[#66C4BF]/30 px-2 py-1 mb-2">
+                    <span class="text-xs font-mono text-[#66C4BF]">BLUEPRINT // SALMON ANATOMY</span>
+                    <button onclick="openEnlargeModal('https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/0bdaee59bd6f2ad6cc83925643724b23f4c04f66/SALMON.png', 'SALMON ANATOMY BLUEPRINT')" class="text-[11px] bg-[#66C4BF]/20 hover:bg-[#66C4BF]/40 text-[#66C4BF] px-2 py-0.5 rounded border border-[#66C4BF]/50 transition flex items-center gap-1 cursor-pointer">
+                        🔍 Click to Enlarge
+                    </button>
+                </div>
+                <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/0bdaee59bd6f2ad6cc83925643724b23f4c04f66/SALMON.png" 
+                     alt="Salmon Anatomy Blueprint Visualization" 
+                     class="w-full h-auto rounded-xl object-contain drop-shadow-[0_0_15px_rgba(102,196,191,0.3)] cursor-pointer"
+                     onclick="openEnlargeModal('https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/0bdaee59bd6f2ad6cc83925643724b23f4c04f66/SALMON.png', 'SALMON ANATOMY BLUEPRINT')" />
+            </div>
+
+            <!-- 卡片三：Aquatic Kinship 堆肥社区 (位置：右下方中部) -->
+            <div id="card-kinship" class="hidden absolute z-30 sci-fi-panel p-2 rounded-2xl w-80 md:w-[420px] text-white transition-all duration-300 transform scale-95 opacity-0 pointer-events-auto" style="top: 48%; left: 45%;">
+                <div class="flex items-center justify-between border-b border-[#66C4BF]/30 px-2 py-1 mb-2">
+                    <span class="text-xs font-mono text-[#66C4BF]">KINSHIP // AQUATIC SYMBIOSIS</span>
+                    <button onclick="openEnlargeModal('https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/337d572aa3297491afec8646dca67e810babc3b3/AQUATIC%20KINSHIP.png', 'AQUATIC KINSHIP ECO COMMUNITY')" class="text-[11px] bg-[#66C4BF]/20 hover:bg-[#66C4BF]/40 text-[#66C4BF] px-2 py-0.5 rounded border border-[#66C4BF]/50 transition flex items-center gap-1 cursor-pointer">
+                        🔍 Click to Enlarge
+                    </button>
+                </div>
+                <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/337d572aa3297491afec8646dca67e810babc3b3/AQUATIC%20KINSHIP.png" 
+                     alt="Aquatic Kinship Visualization" 
+                     class="w-full h-auto rounded-xl object-contain drop-shadow-[0_0_15px_rgba(102,196,191,0.3)] cursor-pointer"
+                     onclick="openEnlargeModal('https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/337d572aa3297491afec8646dca67e810babc3b3/AQUATIC%20KINSHIP.png', 'AQUATIC KINSHIP ECO COMMUNITY')" />
+            </div>
+
+            <!-- 4. 高清大图查看 Modal 弹窗 -->
+            <div id="enlarge-modal" class="hidden absolute inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-6 fade-transition">
+                <div class="sci-fi-panel p-4 md:p-6 rounded-2xl max-w-4xl w-full flex flex-col items-center border border-[#66C4BF]/60 shadow-[0_0_50px_rgba(102,196,191,0.25)]">
+                    <div class="w-full flex justify-between items-center pb-3 border-b border-[#66C4BF]/30 mb-4">
+                        <span id="enlarge-modal-title" class="text-sm font-mono text-[#66C4BF] tracking-wider">SPECIFICATION DETAILED VIEW</span>
+                        <button onclick="closeEnlargeModal()" class="px-3 py-1 bg-[#66C4BF]/20 hover:bg-[#66C4BF]/40 text-cyan-200 text-xs rounded-lg border border-[#66C4BF]/50 transition flex items-center gap-1">
+                            ✕ Resume Gesture Tracking
+                        </button>
+                    </div>
+                    <div class="relative w-full max-h-[70vh] flex items-center justify-center overflow-auto p-2 bg-black/40 rounded-xl border border-white/5">
+                        <img id="enlarge-modal-img" src="" alt="Enlarged Visualization" class="max-w-full max-h-[65vh] object-contain rounded-lg drop-shadow-[0_0_20px_rgba(102,196,191,0.4)]" />
+                    </div>
+                    <div class="w-full flex justify-between items-center mt-3 text-[11px] text-slate-400 font-mono">
+                        <span>Status: Interactive Deep View Active</span>
+                        <span>Click button above or press ESC to exit and resume fist gesture</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 顶部状态栏 -->
+            <div class="absolute top-4 left-6 right-6 z-30 flex justify-between items-center pointer-events-none">
+                <div class="flex items-center gap-4 pointer-events-auto">
+                    <button id="btn-back-home" class="px-3.5 py-1.5 bg-black/60 hover:bg-black/90 rounded-lg text-white text-xs backdrop-blur-md transition flex items-center gap-1.5 playfair-modal shadow-lg" style="border: 1px solid rgba(102, 196, 191, 0.4);">
+                        <span>←</span> Exit
+                    </button>
+                    <!-- 新增音乐播放控制按钮 -->
+                    <button id="btn-toggle-audio" class="px-3 py-1.5 bg-black/60 hover:bg-black/90 rounded-lg text-white text-xs backdrop-blur-md transition flex items-center gap-1.5 playfair-modal shadow-lg" style="border: 1px solid rgba(102, 196, 191, 0.4); color: #66C4BF;">
+                        <span id="audio-icon">🎵</span> <span id="audio-status">Music ON</span>
+                    </button>
+                    <div class="sci-fi-panel px-4 py-1.5 rounded-lg flex items-center gap-2 text-xs tracking-wider" style="color: #66C4BF;">
+                        <span>🌊</span>
+                        <span class="font-bold text-white">Deep Sea Exploration</span>
+                        <span style="color: #66C4BF;">//</span> SECTOR 7-B // CV GESTURE SYSTEM
+                    </div>
+                </div>
+
+                <div class="sci-fi-panel px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs text-slate-300 pointer-events-auto">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Sensor Online // Tracking Active</span>
+                    <span class="font-mono ml-2" style="color: #66C4BF;">FPS: <span id="fps-counter">120</span></span>
+                </div>
+            </div>
+
+            <!-- 右下角预览 PIP 窗口 -->
+            <div class="absolute bottom-6 right-6 z-35 w-60 h-40 rounded-xl overflow-hidden bg-black/50 pip-window shadow-2xl" style="border: 1px solid rgba(102, 196, 191, 0.4);">
+                <div class="absolute top-0 inset-x-0 bg-slate-900/80 px-2.5 py-1 flex justify-between items-center text-[9px] border-b z-10" style="color: #66C4BF; border-color: rgba(102, 196, 191, 0.3);">
+                    <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full animate-ping" style="background-color: #66C4BF;"></span>Camera PIP Feed</span>
+                    <span class="text-slate-400">Blur + Skeleton</span>
+                </div>
+                <video id="input-video" class="hidden" playsinline muted></video>
+                <canvas id="pip-canvas" class="w-full h-full object-cover pt-5" width="320" height="240"></canvas>
+                <div class="absolute bottom-1 left-2 z-10 text-[8px] bg-black/60 px-1.5 py-0.5 rounded" style="color: #66C4BF;">
+                    Privacy Blur & Neon Bones
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 预加载海底动态视频涂层 -->
+    <video id="spotlight-video" class="hidden" loop playsinline muted crossorigin="anonymous">
+        <source src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/e64063dd842e9a809fa4d335195394974e10f17f/track-video.mp4" type="video/mp4">
+    </video>
+
+    <!-- 循环播放背景音频 -->
+    <audio id="bg-music" loop crossorigin="anonymous" preload="auto">
+        <source src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/acb7ef2649ceb1ec250dbaed8c27e31be91d0a32/music.mov" type="video/mp4">
+    </audio>
+
+    <!-- 核心交互逻辑脚本 -->
+    <script>
+        const landingPage = document.getElementById('landing-page');
+        const guideModal = document.getElementById('guide-modal');
+        const guideModalContent = document.getElementById('guide-modal-content');
+        const interactiveContainer = document.getElementById('interactive-container');
+        
+        const btnGuide = document.getElementById('btn-guide');
+        const btnStart = document.getElementById('btn-start');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnModalStart = document.getElementById('btn-modal-start');
+        const btnBackHome = document.getElementById('btn-back-home');
+
+        const inputVideo = document.getElementById('input-video');
+        const spotlightVideo = document.getElementById('spotlight-video');
+        const bgMusic = document.getElementById('bg-music');
+        const btnToggleAudio = document.getElementById('btn-toggle-audio');
+        const audioIcon = document.getElementById('audio-icon');
+        const audioStatus = document.getElementById('audio-status');
+
+        const pipCanvas = document.getElementById('pip-canvas');
+        const pipCtx = pipCanvas.getContext('2d');
+        const webglCanvas = document.getElementById('webgl-canvas');
+
+        // 音频播放控制逻辑
+        let isAudioPlaying = false;
+        btnToggleAudio.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    isAudioPlaying = true;
+                    audioIcon.textContent = "🎵";
+                    audioStatus.textContent = "Music ON";
+                }).catch(e => console.log("Audio play blocked:", e));
+            } else {
+                bgMusic.pause();
+                isAudioPlaying = false;
+                audioIcon.textContent = "🔇";
+                audioStatus.textContent = "Music OFF";
+            }
+        });
+
+        // 词汇与卡片节点
+        const wordSalmon = document.getElementById('word-salmon');
+        const wordKinship = document.getElementById('word-kinship');
+        const wordDebris = document.getElementById('word-debris');
+        const cardSalmon = document.getElementById('card-salmon');
+        const cardKinship = document.getElementById('card-kinship');
+        const cardDebris = document.getElementById('card-debris');
+
+        let scene, camera, renderer;
+        let darkTexture, videoTexture;
+        let shaderMaterial, mesh;
+        let hands, cameraUtils;
+        let isInteractiveActive = false;
+
+        let handPos = { x: 0.5, y: 0.5 };
+        let isFist = false;
+        let currentRadiusNormalized = 0.22; // 默认光圈大小
+
+        // 一级界面：Guide 按钮与弹窗唤醒
+        const guideNonInteractUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/icon%EF%BC%9Aguide-%20non%20interact.png";
+        const guideInteractUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/icon%EF%BC%9Aguide-interact.png";
+
+        btnGuide.addEventListener('mouseenter', () => { btnGuide.src = guideInteractUrl; });
+        btnGuide.addEventListener('mouseleave', () => { btnGuide.src = guideNonInteractUrl; });
+        btnGuide.addEventListener('click', () => {
+            guideModal.classList.remove('hidden');
+            guideModalContent.classList.remove('modal-animated');
+            void guideModalContent.offsetWidth;
+            guideModalContent.classList.add('modal-animated');
+        });
+
+        // 一级界面：Get Started 按钮与进入二级界面
+        const startNonInteractUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/icon%EF%BC%9Astart-%20non%20interact.png";
+        const startInteractUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/icon%EF%BC%9Astart-interact.png";
+
+        btnStart.addEventListener('mouseenter', () => { btnStart.src = startInteractUrl; });
+        btnStart.addEventListener('mouseleave', () => { btnStart.src = startNonInteractUrl; });
+        btnStart.addEventListener('click', startInteractiveSession);
+
+        // 弹窗内部按钮
+        const closeIconUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/window-%20close%20icon.png";
+        const closeInteractUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/window-%20close%20interact%20icon.png";
+
+        btnCloseModal.addEventListener('mouseenter', () => { btnCloseModal.src = closeInteractUrl; });
+        btnCloseModal.addEventListener('mouseleave', () => { btnCloseModal.src = closeIconUrl; });
+        btnCloseModal.addEventListener('click', () => {
+            guideModal.classList.add('hidden');
+        });
+
+        const windowStartIconUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/window-get%20started%20icon.png";
+        const windowStartInteractUrl = "https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/5f6169ece2043e257e060f2b43e9fdce586d0871/window-get%20started%20interact%20icon.png";
+
+        btnModalStart.addEventListener('mouseenter', () => { btnModalStart.src = windowStartInteractUrl; });
+        btnModalStart.addEventListener('mouseleave', () => { btnModalStart.src = windowStartIconUrl; });
+        btnModalStart.addEventListener('click', () => {
+            guideModal.classList.add('hidden');
+            startInteractiveSession();
+        });
+
+        btnBackHome.addEventListener('click', () => {
+            interactiveContainer.classList.add('hidden');
+            landingPage.classList.remove('hidden');
+            isInteractiveActive = false;
+            if (spotlightVideo) spotlightVideo.pause();
+            if (bgMusic) bgMusic.pause();
+        });
+
+        function startInteractiveSession() {
+            landingPage.classList.add('hidden');
+            interactiveContainer.classList.remove('hidden');
+            isInteractiveActive = true;
+
+            if (!scene) {
+                initThreeJS();
+                initMediaPipe();
+            }
+
+            spotlightVideo.play().catch(e => console.log("Video play error:", e));
+            
+            // 用户点击进入界面后开启背景音乐循环播放
+            bgMusic.play().then(() => {
+                isAudioPlaying = true;
+                audioIcon.textContent = "🎵";
+                audioStatus.textContent = "Music ON";
+            }).catch(e => console.log("Audio play error:", e));
+        }
+
+        // Three.js 舞台与着色器设置
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+            renderer = new THREE.WebGLRenderer({ canvas: webglCanvas, antialias: true });
+            renderer.setSize(webglCanvas.clientWidth, webglCanvas.clientHeight);
+
+            const textureLoader = new THREE.TextureLoader();
+            
+            darkTexture = textureLoader.load('https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/e64063dd842e9a809fa4d335195394974e10f17f/2%20Secondary%20interface-Dark%20background%20before%20interaction.jpg', (tex) => {
+                tex.generateMipmaps = true;
+                tex.minFilter = THREE.LinearFilter;
+            });
+            darkTexture.colorSpace = THREE.SRGBColorSpace;
+
+            videoTexture = new THREE.VideoTexture(spotlightVideo);
+            videoTexture.colorSpace = THREE.SRGBColorSpace;
+
+            const uniforms = {
+                u_darkTexture: { value: darkTexture },
+                u_videoTexture: { value: videoTexture },
+                u_handPos: { value: new THREE.Vector2(0.5, 0.5) },
+                u_isFist: { value: 0.0 },
+                u_radius: { value: currentRadiusNormalized },
+                u_aspect: { value: webglCanvas.clientWidth / webglCanvas.clientHeight }
+            };
+
+            const vertexShader = `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 1.0);
+                }
+            `;
+
+            const fragmentShader = `
+                uniform sampler2D u_darkTexture;
+                uniform sampler2D u_videoTexture;
+                uniform vec2 u_handPos;
+                uniform float u_isFist;
+                uniform float u_radius;
+                uniform float u_aspect;
+                varying vec2 vUv;
+
+                void main() {
+                    vec4 darkColor = texture2D(u_darkTexture, vUv);
+                    vec4 videoColor = texture2D(u_videoTexture, vUv);
+
+                    vec2 uvCorrected = vUv;
+                    vec2 handCorrected = u_handPos;
+                    uvCorrected.x *= u_aspect;
+                    handCorrected.x *= u_aspect;
+
+                    float dist = distance(uvCorrected, handCorrected);
+                    float mask = 1.0 - smoothstep(u_radius - 0.05, u_radius, dist);
+                    float finalMask = mask * u_isFist;
+
+                    gl_FragColor = mix(darkColor, videoColor, finalMask);
+                }
+            `;
+
+            shaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader
+            });
+
+            const geometry = new THREE.PlaneGeometry(2, 2);
+            mesh = new THREE.Mesh(geometry, shaderMaterial);
+            scene.add(mesh);
+
+            animate();
+        }
+
+        // 放大卡片 Modal 控制
+        const enlargeModal = document.getElementById('enlarge-modal');
+        const enlargeModalImg = document.getElementById('enlarge-modal-img');
+        const enlargeModalTitle = document.getElementById('enlarge-modal-title');
+
+        function openEnlargeModal(imgSrc, title) {
+            enlargeModalImg.src = imgSrc;
+            enlargeModalTitle.textContent = title;
+            enlargeModal.classList.remove('hidden');
+        }
+
+        function closeEnlargeModal() {
+            enlargeModal.classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !enlargeModal.classList.contains('hidden')) {
+                closeEnlargeModal();
+            }
+        });
+
+        // 核心检测函数：照亮时同时显现隐藏单词与弹窗卡片
+        function checkWordIllumination(wordElem, cardElem, targetPosNormalized) {
+            // 如果处于放大弹窗状态，暂不显示小型卡片
+            if (!enlargeModal.classList.contains('hidden')) {
+                wordElem.classList.remove('opacity-100', 'scale-100');
+                wordElem.classList.add('opacity-0', 'scale-90');
+                cardElem.classList.add('hidden', 'scale-95', 'opacity-0');
+                cardElem.classList.remove('scale-100', 'opacity-100');
+                return;
+            }
+
+            if (!isInteractiveActive || !isFist) {
+                wordElem.classList.remove('opacity-100', 'scale-100');
+                wordElem.classList.add('opacity-0', 'scale-90');
+                cardElem.classList.add('hidden', 'scale-95', 'opacity-0');
+                cardElem.classList.remove('scale-100', 'opacity-100');
+                return;
+            }
+
+            const dx = (targetPosNormalized.x - handPos.x);
+            const dy = (targetPosNormalized.y - handPos.y);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < currentRadiusNormalized + 0.08) {
+                // 1. 显现隐藏单词
+                wordElem.classList.remove('opacity-0', 'scale-90');
+                wordElem.classList.add('opacity-100', 'scale-100');
+
+                // 2. 延迟平滑弹出卡片
+                cardElem.classList.remove('hidden');
+                setTimeout(() => {
+                    cardElem.classList.add('scale-100', 'opacity-100');
+                    cardElem.classList.remove('scale-95', 'opacity-0');
+                }, 50);
+            } else {
+                wordElem.classList.remove('opacity-100', 'scale-100');
+                wordElem.classList.add('opacity-0', 'scale-90');
+                cardElem.classList.add('scale-95', 'opacity-0');
+                cardElem.classList.remove('scale-100', 'opacity-100');
+                setTimeout(() => {
+                    if (cardElem.classList.contains('opacity-0')) {
+                        cardElem.classList.add('hidden');
+                    }
+                }, 300);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!isInteractiveActive) return;
+
+            shaderMaterial.uniforms.u_handPos.value.lerp(new THREE.Vector2(handPos.x, handPos.y), 0.2);
+            shaderMaterial.uniforms.u_isFist.value = THREE.MathUtils.lerp(shaderMaterial.uniforms.u_isFist.value, isFist ? 1.0 : 0.0, 0.2);
+
+            renderer.render(scene, camera);
+
+            // 实时判定三个词汇是否被探照灯光圈照亮
+            checkWordIllumination(wordDebris, cardDebris, { x: 0.15, y: 0.75 });
+            checkWordIllumination(wordSalmon, cardSalmon, { x: 0.70, y: 0.75 });
+            checkWordIllumination(wordKinship, cardKinship, { x: 0.20, y: 0.32 });
+        }
+
+        // MediaPipe 手势识别
+        function initMediaPipe() {
+            hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.6
+            });
+
+            hands.onResults(onHandResults);
+
+            cameraUtils = new Camera(inputVideo, {
+                onFrame: async () => {
+                    if (isInteractiveActive) {
+                        await hands.send({ image: inputVideo });
+                    }
+                },
+                width: 640,
+                height: 480
+            });
+
+            cameraUtils.start();
+        }
+
+        function onHandResults(results) {
+            pipCtx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                handPos.x = 1.0 - landmarks[9].x; 
+                handPos.y = 1.0 - landmarks[9].y; 
+
+                const wrist = landmarks[0];
+                const fingertips = [8, 12, 16, 20];
+                let totalDist = 0;
+                fingertips.forEach(idx => {
+                    const dx = landmarks[idx].x - wrist.x;
+                    const dy = landmarks[idx].y - wrist.y;
+                    totalDist += Math.sqrt(dx * dx + dy * dy);
+                });
+
+                isFist = (totalDist / fingertips.length) < 0.28;
+                drawNeonSkeleton(landmarks);
+            } else {
+                isFist = false;
+            }
+        }
+
+        // 绘制高亮霓虹手势骨骼线条
+        function drawNeonSkeleton(landmarks) {
+            const connections = [
+                [0,1],[1,2],[2,3],[3,4],
+                [0,5],[5,6],[6,7],[7,8],
+                [5,9],[9,10],[10,11],[11,12],
+                [9,13],[13,14],[14,15],[15,16],
+                [13,17],[17,18],[18,19],[19,20],[0,17]
+            ];
+
+            pipCtx.save();
+            pipCtx.lineWidth = 3.5;
+            pipCtx.strokeStyle = isFist ? '#66C4BF' : '#00ff88';
+            pipCtx.shadowColor = isFist ? '#66C4BF' : '#00ff88';
+            pipCtx.shadowBlur = 10;
+
+            connections.forEach(([i, j]) => {
+                const p1 = landmarks[i];
+                const p2 = landmarks[j];
+                pipCtx.beginPath();
+                pipCtx.moveTo((1 - p1.x) * pipCanvas.width, p1.y * pipCanvas.height);
+                pipCtx.lineTo((1 - p2.x) * pipCanvas.width, p2.y * pipCanvas.height);
+                pipCtx.stroke();
+            });
+
+            landmarks.forEach(p => {
+                pipCtx.beginPath();
+                pipCtx.arc((1 - p.x) * pipCanvas.width, p.y * pipCanvas.height, 4, 0, 2 * Math.PI);
+                pipCtx.fillStyle = '#ffffff';
+                pipCtx.fill();
+            });
+
+            pipCtx.restore();
+        }
+
+        window.addEventListener('resize', () => {
+            if (renderer) {
+                renderer.setSize(webglCanvas.clientWidth, webglCanvas.clientHeight);
+                if (shaderMaterial) {
+                    shaderMaterial.uniforms.u_aspect.value = webglCanvas.clientWidth / webglCanvas.clientHeight;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
