@@ -32,19 +32,19 @@ The project adopts a dual-layer viewport architecture driven by real-time shader
 
 ---
 
-## 📸 4. 界面截图与视觉展示 (Screenshots & Visual Showcase)
+## 📸 4. Screenshots & Visual Showcase
 
-* **1. 主着陆页与氛围粒子 (Primary Landing Page)**：
-  <img src="主界面.jpg" width="700" alt="Primary Landing Page">
-  > *✨ 注释：页面加载时呈现深海粒子背景与呼吸微光效果。用户可点击 **“Get Started”** 进入探索，或点击 **“Guide”** 查看手势操作指南。*
+* **1. Primary Landing Page**:
+  <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/9735a0e46da1d0c15b6472d765a4f8d4a985655c/Primary%20Landing%20Page.png" width="700" alt="Primary Landing Page">
+  > *✨ Description: The initial loading interface presents a deep-sea particle atmosphere with breathing glowing effects. Users can click **"Get Started"** to enter the exploration or open the **"Guide"** modal for gesture instructions.*
 
-* **2. 渔场显示器监控光标与手势识别触发 (Fishery Monitoring & Gesture Interaction)**：
-  <img src="次要界面 - 交互前的深色背景.jpg" width="700" alt="Secondary Exploration View">
-  > *✨ 注释：进入二级探索视口后，右下角展示实时手势追踪骨骼。用户通过“握拳”手势驱动聚光灯光标，在黑暗深海中主动扫描并发现隐藏的生态词汇。*
+* **2. Secondary Exploration View & Gesture Tracking**:
+  <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/9735a0e46da1d0c15b6472d765a4f8d4a985655c/Secondary%20Exploration%20View.jpg" width="700" alt="Secondary Exploration View">
+  > *✨ Description: Inside the secondary exploration viewport, the bottom-right PIP window displays real-time hand-tracking skeletons. Users use a closed-fist gesture to drive a spotlight cursor, actively scanning and uncovering hidden ecological keywords across the dark deep-sea background.*
 
-* **3. 悬浮数据可视化卡片与多维生态解构 (Floating Data Cards & Ecological Deconstruction)**：
-  <img src="水生亲缘关系.png" width="700" alt="Data Visualization Cards">
-  > *✨ 注释：当手势光标成功命中隐藏关键词（如 `OVERFISHING, MARINE DEBRIS`、`SALMON`、`AQUATIC KINSHIP`）时，系统会自动在屏幕关键坐标处弹出**悬浮数据可视化卡片**。卡片展示了多物种亲缘、工业化养殖解构与海洋生态数据，支持高清查看，完成了完整的互动闭环。*
+* **3. Floating Data Visualization Cards & HD View**:
+  <img src="https://raw.githubusercontent.com/xy-art-web/salmon-kinship-interactive/7e6319e985bde6ac07d7213e14a67da5f88d5bcc/Data%20Visualization%20Cards.jpg" width="700" alt="Data Visualization Cards">
+  > *✨ Description: Once the gesture cursor hits hidden keywords (e.g., `OVERFISHING, MARINE DEBRIS`, `SALMON`, `AQUATIC KINSHIP`), floating data cards automatically pop up. These cards showcase multi-species kinship data and industrial aquaculture deconstruction, supporting high-resolution zoom views to complete the interactive loop.*
 
 ---
 
