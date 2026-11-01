@@ -7,7 +7,7 @@
 
 ## 1. 💡 Initial Conception & Core Idea
 * **Inspiration & Theme**: This project explores post-human ecology, industrial salmon aquaculture, and multi-species kinship. It aims to bridge digital art with public ecological reflection.
-* **Core Interaction Concept**: Moving away from traditional mouse clicks or keyboard inputs, the project employs **non-contact computer vision hand gesture recognition (MediaPipe Hands)**. Users make a "fist" gesture in front of the camera to drive a **fishery monitoring cursor** (spotlight effect), actively scanning and discovering hidden ecological keywords (`OVERFISHING, MARINE DEBRIS`, `SALMON`, `AQUATIC KINSHIP`) across a dark deep-sea background to trigger high-resolution data visualization cards and zoom views.
+* **Core Interaction Concept**: Moving away from traditional mouse clicks or keyboard inputs, the project employs **non-contact computer vision hand gesture recognition (MediaPipe Hands)**. Users make a "fist" gesture in front of the camera to drive a **fishery monitoring cursor** (spotlight effect), actively scanning and discovering hidden ecological keywords across a dark deep-sea background to trigger high-resolution data visualization cards and zoom views.
 
 ---
 
@@ -23,7 +23,7 @@ Throughout the development process, several key iterations were implemented to e
 ---
 
 ## 3. 👥 User Testing & Observations
-An anonymous black-box user test was conducted with a peer after implementing the core features, yielding the following observations:
+A user test was conducted with a peer after implementing the core features, yielding the following observations:
 * **👀 Observation 1 (Landing Page)**: Upon first opening the landing page, the tester hesitated slightly due to the lack of an immediate, explicit text prompt on how to start.
 * **👀 Observation 2 (Gesture Interaction)**: After entering the secondary exploration screen, the tester initially tried using a mouse before noticing the neon-cyan hand skeleton and moving cursor in the bottom-right PIP window, which successfully guided them to use hand gestures with high engagement.
 * **👀 Observation 3 (Card Reading)**: When the information cards popped up, the tester expressed a desire to examine the fine details on the charts more closely.
@@ -44,4 +44,4 @@ An anonymous black-box user test was conducted with a peer after implementing th
 * **✨ Adopted AI Suggestion**: 
   * **Technical Approach**: The AI suggested utilizing a **Three.js OrthographicCamera combined with a custom Fragment Shader** for real-time spotlight and background blending. This achieved superior rendering performance compared to DOM-based masks, stably maintaining 120 FPS.
 * **✍️ Modified or Rejected AI Suggestion**:
-  * **Interaction Logic**: The AI initially recommended triggering cards via mouse hover. Considering the project's core non-contact gesture interaction paradigm, this was rejected in favor of an **"automatic trigger when the gesture cursor enters the coordinate zone + persistent display until exit"** model, which seamlessly aligns with MediaPipe tracking.
+  * **Interaction Logic**: The AI initially recommended triggering cards via mouse hover. Considering the project's core non-contact gesture interaction paradigm, this was rejected in favor of an **"automatic trigger when the gesture cursor enters the coordinate zone + persistent display until exit"** model, which aligns with MediaPipe tracking.
