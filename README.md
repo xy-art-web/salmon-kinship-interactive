@@ -32,7 +32,23 @@ The project adopts a dual-layer viewport architecture driven by real-time shader
 
 ---
 
-## 🚀 4. Quick Start & Usage
+## 📸 4. 界面截图与视觉展示 (Screenshots & Visual Showcase)
+
+* **1. 主着陆页与氛围粒子 (Primary Landing Page)**：
+  <img src="主界面.jpg" width="700" alt="Primary Landing Page">
+  > *✨ 注释：页面加载时呈现深海粒子背景与呼吸微光效果。用户可点击 **“Get Started”** 进入探索，或点击 **“Guide”** 查看手势操作指南。*
+
+* **2. 渔场显示器监控光标与手势识别触发 (Fishery Monitoring & Gesture Interaction)**：
+  <img src="次要界面 - 交互前的深色背景.jpg" width="700" alt="Secondary Exploration View">
+  > *✨ 注释：进入二级探索视口后，右下角展示实时手势追踪骨骼。用户通过“握拳”手势驱动聚光灯光标，在黑暗深海中主动扫描并发现隐藏的生态词汇。*
+
+* **3. 悬浮数据可视化卡片与多维生态解构 (Floating Data Cards & Ecological Deconstruction)**：
+  <img src="水生亲缘关系.png" width="700" alt="Data Visualization Cards">
+  > *✨ 注释：当手势光标成功命中隐藏关键词（如 `OVERFISHING, MARINE DEBRIS`、`SALMON`、`AQUATIC KINSHIP`）时，系统会自动在屏幕关键坐标处弹出**悬浮数据可视化卡片**。卡片展示了多物种亲缘、工业化养殖解构与海洋生态数据，支持高清查看，完成了完整的互动闭环。*
+
+---
+
+## 🚀 5. Quick Start & Usage
 This is a purely front-end-based browser project requiring no complex backend setup.
 
 1. **Video Demo**: [📺 Watch the Full YouTube Demonstration Video](https://youtu.be/xU7JrCWnEGs)
